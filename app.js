@@ -94,7 +94,8 @@ const BASEMAPS = [
 ];
 
 // ─── Map init ──────────────────────────────────────────────────────────────
-const map = L.map('map', { zoomControl: true, tap: false }).setView([20, 0], 2);
+const map = L.map('map', { zoomControl: true, tap: false });
+map.fitBounds([[41.3, -5.1], [51.1, 9.6]]); // Metropolitan France
 
 // Active basemap state
 let activeBasemapId = 'esri-sat';
