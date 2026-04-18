@@ -100,6 +100,68 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); color: va
   color: #fff;
 }
 
+/* ─── City search ─────────────────────────────────────── */
+#search-box {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+
+  background: var(--surface);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-lg);
+  width: 220px;
+  transition: width 0.2s ease, box-shadow 0.2s ease;
+}
+
+#search-box:focus-within {
+  width: 280px;
+  box-shadow: var(--shadow-lg), 0 0 0 3px var(--accent-light);
+}
+
+#search-icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+#search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-family: var(--font);
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  min-width: 0;
+}
+
+#search-input::placeholder { color: #d1d5db; }
+
+#search-spinner {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+#search-spinner svg {
+  width: 15px;
+  height: 15px;
+  animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
 /* ─── Annotation Panel ─────────────────────────────────── */
 #panel {
   position: fixed;

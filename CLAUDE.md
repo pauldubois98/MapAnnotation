@@ -8,3 +8,5 @@ Plan before coding, ask if anything is unclear or if you see multiple implementa
 
 Add a readme (including instructions to run locally)
 
+I want the user to be able to type the name of a city, and the tool will automatically zoom on that city.
+

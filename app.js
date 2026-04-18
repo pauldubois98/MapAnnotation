@@ -40,6 +40,8 @@ const btnRegion   = document.getElementById('btn-region');
 const btnImport   = document.getElementById('btn-import');
 const btnExport   = document.getElementById('btn-export');
 const fileInput   = document.getElementById('file-input');
+const searchInput   = document.getElementById('search-input');
+const searchSpinner = document.getElementById('search-spinner');
 const toastCont   = document.getElementById('toast-container');
 
 // Editing state
@@ -387,6 +389,50 @@ btnExport.addEventListener('click', () => {
 
   toast(`Exported ${store.features.length} annotation${store.features.length !== 1 ? 's' : ''}`);
 });
+
+// ─── City search (Nominatim) ───────────────────────────────────────────────
+searchInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') geocodeCity(searchInput.value.trim());
+});
+
+async function geocodeCity(query) {
+  if (!query) return;
+
+  searchSpinner.hidden = false;
+  searchInput.disabled = true;
+
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
+    const res  = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+    const data = await res.json();
+
+    if (!data.length) {
+      toast(`No results for "${query}"`);
+      return;
+    }
+
+    const { lat, lon, display_name, boundingbox } = data[0];
+
+    if (boundingbox) {
+      // [minLat, maxLat, minLng, maxLng]
+      const [s, n, w, e] = boundingbox.map(Number);
+      map.fitBounds([[s, w], [n, e]], { maxZoom: 14, animate: true });
+    } else {
+      map.setView([parseFloat(lat), parseFloat(lon)], 12, { animate: true });
+    }
+
+    // Show the place name as a brief toast
+    const label = display_name.split(',').slice(0, 2).join(',');
+    toast(label);
+    searchInput.value = '';
+    searchInput.blur();
+  } catch {
+    toast('Search failed — check your connection');
+  } finally {
+    searchSpinner.hidden = true;
+    searchInput.disabled = false;
+  }
+}
 
 // ─── Toast ─────────────────────────────────────────────────────────────────
 function toast(message) {
