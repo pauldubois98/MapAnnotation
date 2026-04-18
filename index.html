@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Map Annotation</title>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Leaflet.draw -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+  <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Toolbar -->
+  <div id="toolbar">
+    <div class="tool-group">
+      <button id="btn-point" class="tool-btn" title="Add a point">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4"/>
+          <line x1="12" y1="2" x2="12" y2="6"/>
+          <line x1="12" y1="18" x2="12" y2="22"/>
+          <line x1="2" y1="12" x2="6" y2="12"/>
+          <line x1="18" y1="12" x2="22" y2="12"/>
+        </svg>
+        <span>Point</span>
+      </button>
+      <button id="btn-path" class="tool-btn" title="Draw a path">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 9 12 15 8 21 18"/>
+        </svg>
+        <span>Path</span>
+      </button>
+      <button id="btn-region" class="tool-btn" title="Draw a region">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 22 19 2 19"/>
+        </svg>
+        <span>Region</span>
+      </button>
+    </div>
+
+    <div class="tool-divider"></div>
+
+    <div class="tool-group">
+      <button id="btn-import" class="tool-btn" title="Import GeoJSON">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <span>Import</span>
+      </button>
+      <button id="btn-export" class="tool-btn" title="Export GeoJSON">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <span>Export</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Hidden file input -->
+  <input type="file" id="file-input" accept=".json,.geojson" style="display:none" />
+
+  <!-- Map -->
+  <div id="map"></div>
+
+  <!-- Annotation panel -->
+  <div id="panel">
+    <div id="panel-header">
+      <div id="panel-type-badge"></div>
+      <button id="panel-close" title="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div id="panel-body">
+      <div class="field-group">
+        <label for="input-name">Name</label>
+        <input type="text" id="input-name" placeholder="Short title…" autocomplete="off" />
+      </div>
+
+      <div class="field-group">
+        <label for="input-desc">Description</label>
+        <textarea id="input-desc" placeholder="Add details, notes, or context…" rows="5"></textarea>
+      </div>
+    </div>
+
+    <div id="panel-footer">
+      <button id="btn-delete" class="btn-danger" style="display:none">Delete</button>
+      <div class="spacer"></div>
+      <button id="btn-cancel" class="btn-ghost">Cancel</button>
+      <button id="btn-save" class="btn-primary">Save</button>
+    </div>
+  </div>
+
+  <!-- Toast notifications -->
+  <div id="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
