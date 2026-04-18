@@ -307,6 +307,7 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); color: va
 #panel-type-badge.type-point  { background: #eef2ff; color: #4f46e5; }
 #panel-type-badge.type-path   { background: #ecfdf5; color: #059669; }
 #panel-type-badge.type-region { background: #fffbeb; color: #d97706; }
+#panel-type-badge.type-circle { background: #fdf2f8; color: #9333ea; }
 
 #panel-close {
   display: flex;
@@ -372,6 +373,48 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); color: va
 .field-group input::placeholder,
 .field-group textarea::placeholder {
   color: #d1d5db;
+}
+
+/* Color picker */
+.color-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 2px;
+  border-bottom: 2px solid var(--border);
+}
+
+.color-swatch-wrap {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid rgba(0,0,0,0.12);
+  pointer-events: none;
+}
+
+.color-swatch-wrap input[type="color"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+}
+
+#color-hex {
+  font-size: 12px;
+  font-family: ui-monospace, "SFMono-Regular", monospace;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
 }
 
 /* Panel footer */

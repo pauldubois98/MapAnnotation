@@ -120,16 +120,23 @@ const layerIndex = new Map(); // id → Leaflet layer
 // Load default basemap (after layerGroup exists so bringToFront works)
 setBasemap('esri-sat');
 
-// ─── Style constants ───────────────────────────────────────────────────────
-const STYLES = {
-  point:  { color: '#4f46e5', fillColor: '#4f46e5', fillOpacity: 0.9, weight: 2, radius: 8 },
-  path:   { color: '#059669', weight: 3, opacity: 0.9 },
-  region: { color: '#d97706', weight: 2, opacity: 0.9, fillColor: '#d97706', fillOpacity: 0.15 },
-};
+// ─── Style helpers ─────────────────────────────────────────────────────────
+const DEFAULT_COLOR = '#ef4444';
+
+function makeStyle(type, color) {
+  if (type === 'point') {
+    return { color, fillColor: color, fillOpacity: 0.9, weight: 2, radius: 8 };
+  }
+  if (type === 'path') {
+    return { color, weight: 3, opacity: 0.9 };
+  }
+  // region, circle
+  return { color, weight: 2, opacity: 0.9, fillColor: color, fillOpacity: 0.2 };
+}
 
 // ─── Drawing state ─────────────────────────────────────────────────────────
 let activeHandler = null;
-let activeType = null;      // 'point' | 'path' | 'region'
+let activeType = null;      // 'point' | 'path' | 'region' | 'circle'
 let pendingLayer = null;    // layer awaiting annotation before being committed
 
 // ─── DOM refs ─────────────────────────────────────────────────────────────
@@ -144,6 +151,10 @@ const btnClose    = document.getElementById('panel-close');
 const btnPoint    = document.getElementById('btn-point');
 const btnPath     = document.getElementById('btn-path');
 const btnRegion   = document.getElementById('btn-region');
+const btnCircle   = document.getElementById('btn-circle');
+const inputColor  = document.getElementById('input-color');
+const colorSwatch = document.getElementById('color-swatch');
+const colorHex    = document.getElementById('color-hex');
 const btnImport   = document.getElementById('btn-import');
 const btnExport   = document.getElementById('btn-export');
 const fileInput   = document.getElementById('file-input');
@@ -159,13 +170,16 @@ let editingId = null;  // id of feature currently in panel, or null for new
 
 // ─── Drawing handlers ──────────────────────────────────────────────────────
 const handlers = {
-  point:  new L.Draw.CircleMarker(map, { shapeOptions: STYLES.point, repeatMode: false }),
-  path:   new L.Draw.Polyline(map,  { shapeOptions: STYLES.path, repeatMode: false }),
-  region: new L.Draw.Polygon(map,   { shapeOptions: STYLES.region, repeatMode: false }),
+  point:  new L.Draw.CircleMarker(map, { shapeOptions: makeStyle('point', DEFAULT_COLOR), repeatMode: false }),
+  path:   new L.Draw.Polyline(map,  { shapeOptions: makeStyle('path', DEFAULT_COLOR), repeatMode: false }),
+  region: new L.Draw.Polygon(map,   { shapeOptions: makeStyle('region', DEFAULT_COLOR), repeatMode: false }),
+  circle: new L.Draw.Circle(map,    { shapeOptions: makeStyle('circle', DEFAULT_COLOR), showRadius: true, metric: true, repeatMode: false }),
 };
 
+const allToolBtns = [btnPoint, btnPath, btnRegion, btnCircle];
+const btnByType   = { point: btnPoint, path: btnPath, region: btnRegion, circle: btnCircle };
+
 function activateTool(type) {
-  // Deactivate current handler
   if (activeHandler) {
     activeHandler.disable();
     activeHandler = null;
@@ -174,7 +188,7 @@ function activateTool(type) {
   // Toggle off if same button clicked again
   if (activeType === type) {
     activeType = null;
-    [btnPoint, btnPath, btnRegion].forEach(b => b.classList.remove('active'));
+    allToolBtns.forEach(b => b.classList.remove('active'));
     document.getElementById('map').classList.remove('drawing-active');
     return;
   }
@@ -184,15 +198,14 @@ function activateTool(type) {
   activeHandler.enable();
   document.getElementById('map').classList.add('drawing-active');
 
-  // Highlight active button
-  const btnMap = { point: btnPoint, path: btnPath, region: btnRegion };
-  [btnPoint, btnPath, btnRegion].forEach(b => b.classList.remove('active'));
-  btnMap[type].classList.add('active');
+  allToolBtns.forEach(b => b.classList.remove('active'));
+  btnByType[type].classList.add('active');
 }
 
 btnPoint.addEventListener('click',  () => activateTool('point'));
 btnPath.addEventListener('click',   () => activateTool('path'));
 btnRegion.addEventListener('click', () => activateTool('region'));
+btnCircle.addEventListener('click', () => activateTool('circle'));
 
 // ─── Handle completed draw ─────────────────────────────────────────────────
 map.on('draw:created', (e) => {
@@ -202,12 +215,12 @@ map.on('draw:created', (e) => {
   // Reset tool state
   activeHandler = null;
   activeType = null;
-  [btnPoint, btnPath, btnRegion].forEach(b => b.classList.remove('active'));
+  allToolBtns.forEach(b => b.classList.remove('active'));
   document.getElementById('map').classList.remove('drawing-active');
 
   // Temporarily add the layer so the user can see it while filling the form
   pendingLayer = layer;
-  applyStyle(layer, type);
+  applyStyle(layer, type, DEFAULT_COLOR);
   layerGroup.addLayer(layer);
 
   openPanel(null, type);
@@ -222,7 +235,7 @@ function openPanel(id, type) {
     : type;
 
   // Badge
-  const labels = { point: 'Point', path: 'Path', region: 'Region' };
+  const labels = { point: 'Point', path: 'Path', region: 'Region', circle: 'Circle' };
   panelBadge.textContent = labels[resolvedType] ?? 'Annotation';
   panelBadge.className = `type-${resolvedType}`;
 
@@ -231,11 +244,13 @@ function openPanel(id, type) {
     const feat = store.features.find(f => f.properties.id === id);
     inputName.value = feat.properties.name ?? '';
     inputDesc.value = feat.properties.description ?? '';
+    setColor(feat.properties.color ?? DEFAULT_COLOR);
     btnDelete.style.display = 'inline-flex';
   } else {
     // New mode
     inputName.value = '';
     inputDesc.value = '';
+    setColor(DEFAULT_COLOR);
     btnDelete.style.display = 'none';
   }
 
@@ -270,6 +285,7 @@ document.addEventListener('keydown', (e) => {
 btnSave.addEventListener('click', () => {
   const name = inputName.value.trim();
   const desc = inputDesc.value.trim();
+  const color = inputColor.value;
 
   if (!name) {
     inputName.focus();
@@ -283,10 +299,13 @@ btnSave.addEventListener('click', () => {
     const feat = store.features.find(f => f.properties.id === editingId);
     feat.properties.name = name;
     feat.properties.description = desc;
+    feat.properties.color = color;
 
-    // Update layer tooltip
     const layer = layerIndex.get(editingId);
-    if (layer) updateLayerTooltip(layer, feat.properties);
+    if (layer) {
+      layer.setStyle(makeStyle(feat.properties.annotationType, color));
+      updateLayerTooltip(layer, feat.properties);
+    }
 
     toast('Annotation updated');
   } else {
@@ -295,22 +314,18 @@ btnSave.addEventListener('click', () => {
     const type = panelBadge.className.replace('type-', '');
     const geometry = layerToGeoJSON(pendingLayer, type);
 
-    const feature = {
-      type: 'Feature',
-      id,
-      geometry,
-      properties: {
-        id,
-        name,
-        description: desc,
-        annotationType: type,
-        createdAt: new Date().toISOString(),
-      },
+    const properties = {
+      id, name, description: desc, color,
+      annotationType: type,
+      createdAt: new Date().toISOString(),
     };
+    if (type === 'circle') properties.radius = pendingLayer.getRadius();
 
+    const feature = { type: 'Feature', id, geometry, properties };
     store.features.push(feature);
 
-    // Move pendingLayer into managed index, attach click
+    // Apply chosen color, move into managed index
+    applyStyle(pendingLayer, type, color);
     attachLayerBehaviour(pendingLayer, id);
     layerIndex.set(id, pendingLayer);
     updateLayerTooltip(pendingLayer, feature.properties);
@@ -334,15 +349,14 @@ btnDelete.addEventListener('click', () => {
 });
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
-function applyStyle(layer, type) {
-  if (type === 'point') {
-    // Leaflet.draw creates a CircleMarker — apply style options
-    layer.setStyle(STYLES.point);
-  } else if (type === 'path') {
-    layer.setStyle(STYLES.path);
-  } else if (type === 'region') {
-    layer.setStyle(STYLES.region);
-  }
+function applyStyle(layer, type, color) {
+  layer.setStyle(makeStyle(type, color));
+}
+
+function setColor(hex) {
+  inputColor.value = hex;
+  colorSwatch.style.background = hex;
+  colorHex.textContent = hex;
 }
 
 function attachLayerBehaviour(layer, id) {
@@ -356,10 +370,7 @@ function attachLayerBehaviour(layer, id) {
     layer.on('mouseover', () => layer.setStyle({ opacity: 1, fillOpacity: 0.35 }));
     layer.on('mouseout',  () => {
       const feat = store.features.find(f => f.properties.id === id);
-      if (feat) {
-        const baseStyle = STYLES[feat.properties.annotationType];
-        layer.setStyle(baseStyle);
-      }
+      if (feat) layer.setStyle(makeStyle(feat.properties.annotationType, feat.properties.color ?? DEFAULT_COLOR));
     });
   }
 }
@@ -375,16 +386,16 @@ function updateLayerTooltip(layer, props) {
 }
 
 function layerToGeoJSON(layer, type) {
-  if (type === 'point') {
+  if (type === 'point' || type === 'circle') {
     const ll = layer.getLatLng();
     return { type: 'Point', coordinates: [ll.lng, ll.lat] };
+    // radius for circle is stored in properties.radius, not in geometry
   }
   if (type === 'path') {
     const coords = layer.getLatLngs().map(ll => [ll.lng, ll.lat]);
     return { type: 'LineString', coordinates: coords };
   }
   if (type === 'region') {
-    // Outer ring only; close the ring
     const ring = layer.getLatLngs()[0].map(ll => [ll.lng, ll.lat]);
     ring.push(ring[0]);
     return { type: 'Polygon', coordinates: [ring] };
@@ -394,21 +405,24 @@ function layerToGeoJSON(layer, type) {
 function renderFeature(feature) {
   const { geometry, properties } = feature;
   const type = properties.annotationType;
+  const color = properties.color ?? DEFAULT_COLOR;
   let layer;
 
-  if (geometry.type === 'Point') {
+  if (type === 'circle' && properties.radius != null) {
     const [lng, lat] = geometry.coordinates;
-    layer = L.circleMarker([lat, lng], STYLES.point);
+    layer = L.circle([lat, lng], { radius: properties.radius, ...makeStyle('circle', color) });
+  } else if (geometry.type === 'Point') {
+    const [lng, lat] = geometry.coordinates;
+    layer = L.circleMarker([lat, lng], makeStyle('point', color));
   } else if (geometry.type === 'LineString') {
     const latlngs = geometry.coordinates.map(([lng, lat]) => [lat, lng]);
-    layer = L.polyline(latlngs, STYLES.path);
+    layer = L.polyline(latlngs, makeStyle('path', color));
   } else if (geometry.type === 'Polygon') {
-    // Take outer ring, drop the closing duplicate
     const ring = geometry.coordinates[0];
     const latlngs = ring.slice(0, -1).map(([lng, lat]) => [lat, lng]);
-    layer = L.polygon(latlngs, STYLES.region);
+    layer = L.polygon(latlngs, makeStyle('region', color));
   } else {
-    return; // unsupported geometry type
+    return;
   }
 
   layerGroup.addLayer(layer);
@@ -498,6 +512,18 @@ btnExport.addEventListener('click', () => {
   URL.revokeObjectURL(url);
 
   toast(`Exported ${store.features.length} annotation${store.features.length !== 1 ? 's' : ''}`);
+});
+
+// ─── Color picker live preview ─────────────────────────────────────────────
+inputColor.addEventListener('input', () => {
+  setColor(inputColor.value);
+  const type = panelBadge.className.replace('type-', '');
+  if (pendingLayer) {
+    applyStyle(pendingLayer, type, inputColor.value);
+  } else if (editingId) {
+    const layer = layerIndex.get(editingId);
+    if (layer) layer.setStyle(makeStyle(type, inputColor.value));
+  }
 });
 
 // ─── Layer picker ─────────────────────────────────────────────────────────

@@ -18,3 +18,7 @@ Fix these warnings I get in the console:
 - wrong event specified: touchleave
 - MouseEvent.mozPressure is deprecated. Use PointerEvent.pressure instead.
 - MouseEvent.mozInputSource is deprecated. Use PointerEvent.pointerType instead.
+
+The user should be able to pick the color associated with each marker.
+Default to red.
+Also allow circular region selection.

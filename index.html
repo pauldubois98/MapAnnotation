@@ -67,11 +67,17 @@
         </svg>
         <span>Path</span>
       </button>
-      <button id="btn-region" class="tool-btn" title="Draw a region">
+      <button id="btn-region" class="tool-btn" title="Draw a polygon region">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polygon points="12 2 22 19 2 19"/>
         </svg>
         <span>Region</span>
+      </button>
+      <button id="btn-circle" class="tool-btn" title="Draw a circular region">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+        </svg>
+        <span>Circle</span>
       </button>
     </div>
 
@@ -161,8 +167,19 @@
       </div>
 
       <div class="field-group">
+        <label for="input-color">Color</label>
+        <div class="color-row">
+          <div class="color-swatch-wrap">
+            <div class="color-swatch" id="color-swatch"></div>
+            <input type="color" id="input-color" value="#ef4444" />
+          </div>
+          <span id="color-hex">#ef4444</span>
+        </div>
+      </div>
+
+      <div class="field-group">
         <label for="input-desc">Description</label>
-        <textarea id="input-desc" placeholder="Add details, notes, or context…" rows="5"></textarea>
+        <textarea id="input-desc" placeholder="Add details, notes, or context…" rows="4"></textarea>
       </div>
     </div>
 
