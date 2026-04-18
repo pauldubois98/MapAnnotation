@@ -13,3 +13,8 @@ I want the user to be able to type the name of a city, and the tool will automat
 I want the user to have the option to show plan view, or satellite (with or without roads, etc).
 Give as many options as possible.
 Plan before coding, ask if anython is unclear.
+
+Fix these warnings I get in the console:
+- wrong event specified: touchleave
+- MouseEvent.mozPressure is deprecated. Use PointerEvent.pressure instead.
+- MouseEvent.mozInputSource is deprecated. Use PointerEvent.pointerType instead.

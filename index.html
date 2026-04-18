@@ -5,6 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Map Annotation</title>
 
+  <!-- Patch deprecated/invalid browser APIs that Leaflet triggers warnings for -->
+  <script>
+    (function () {
+      // Shadow deprecated Firefox MouseEvent properties read by Leaflet
+      // (mozPressure, mozInputSource). Defining our own getter on the prototype
+      // prevents the browser from invoking its own deprecated native getter.
+      ['mozPressure', 'mozInputSource'].forEach(function (prop) {
+        try {
+          Object.defineProperty(MouseEvent.prototype, prop, {
+            get: function () { return 0; },
+            configurable: true,
+          });
+        } catch (_) {}
+      });
+
+      // Suppress "wrong event specified: touchleave" — Firefox rejects this
+      // non-standard event name when Leaflet tries to register it.
+      var _add = EventTarget.prototype.addEventListener;
+      var _rem = EventTarget.prototype.removeEventListener;
+      var SKIP = { touchleave: true };
+      EventTarget.prototype.addEventListener = function (type, fn, opts) {
+        if (SKIP[type]) return;
+        return _add.call(this, type, fn, opts);
+      };
+      EventTarget.prototype.removeEventListener = function (type, fn, opts) {
+        if (SKIP[type]) return;
+        return _rem.call(this, type, fn, opts);
+      };
+    })();
+  </script>
+
   <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

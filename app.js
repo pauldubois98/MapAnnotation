@@ -94,7 +94,7 @@ const BASEMAPS = [
 ];
 
 // ─── Map init ──────────────────────────────────────────────────────────────
-const map = L.map('map', { zoomControl: true }).setView([20, 0], 2);
+const map = L.map('map', { zoomControl: true, tap: false }).setView([20, 0], 2);
 
 // Active basemap state
 let activeBasemapId = 'esri-sat';
