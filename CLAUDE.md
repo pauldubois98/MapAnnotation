@@ -24,3 +24,5 @@ Default to red.
 Also allow circular region selection.
 
 Allow the user to copy/paste the geojson (as well as file download/upload).
+
+Make the website adaptative.
