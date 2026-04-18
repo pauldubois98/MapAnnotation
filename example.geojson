@@ -1,0 +1,23 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "a71994d8-9d2e-4a0f-baf1-e8e8656160ad",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.9043872356414796,
+          42.99128484548137
+        ]
+      },
+      "properties": {
+        "id": "a71994d8-9d2e-4a0f-baf1-e8e8656160ad",
+        "name": "Attero",
+        "description": "Attention, ca déclenche!",
+        "annotationType": "point",
+        "createdAt": "2026-04-18T16:12:51.421Z"
+      }
+    }
+  ]
+}
