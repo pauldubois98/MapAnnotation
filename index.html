@@ -130,6 +130,20 @@
 
     <div class="tool-divider"></div>
 
+    <div id="search-box">
+      <svg id="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="search-input" placeholder="Search a city…" autocomplete="off" />
+      <div id="search-spinner" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2a10 10 0 1 0 10 10" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="tool-divider"></div>
+
     <div class="tool-group">
       <button id="btn-layers" class="tool-btn" title="Change basemap">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -153,19 +167,6 @@
       </button>
     </div>
     <div id="layer-grid"></div>
-  </div>
-
-  <!-- City search -->
-  <div id="search-box">
-    <svg id="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-    </svg>
-    <input type="text" id="search-input" placeholder="Search a city…" autocomplete="off" />
-    <div id="search-spinner" hidden>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M12 2a10 10 0 1 0 10 10" stroke-linecap="round"/>
-      </svg>
-    </div>
   </div>
 
   <!-- Hidden file input -->

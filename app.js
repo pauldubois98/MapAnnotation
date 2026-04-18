@@ -625,6 +625,23 @@ document.addEventListener('click', (e) => {
 });
 
 // ─── City search (Nominatim) ───────────────────────────────────────────────
+const searchBox = document.getElementById('search-box');
+
+// Mobile: tap the search tab to expand; blur to collapse
+searchBox.addEventListener('click', () => {
+  if (window.innerWidth <= 940 && !searchBox.classList.contains('expanded')) {
+    searchBox.classList.add('expanded');
+    searchInput.focus();
+  }
+});
+
+searchInput.addEventListener('blur', () => {
+  if (window.innerWidth <= 940) {
+    // Small delay so Enter-to-submit fires before collapsing
+    setTimeout(() => searchBox.classList.remove('expanded'), 150);
+  }
+});
+
 searchInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') geocodeCity(searchInput.value.trim());
 });

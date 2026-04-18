@@ -247,36 +247,22 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); color: va
 }
 .layer-card.active span { color: var(--accent); font-weight: 700; }
 
-/* ─── City search ─────────────────────────────────────── */
+/* ─── Inline search (inside toolbar) ──────────────────── */
 #search-box {
-  position: fixed;
-  top: 1rem;
-  left: 5rem;
-  z-index: 1000;
-
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
-
-  background: var(--surface);
-  backdrop-filter: blur(12px) saturate(180%);
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
-  box-shadow: var(--shadow-lg);
-  width: 220px;
-  transition: width 0.2s ease, box-shadow 0.2s ease;
+  padding: 4px 10px;
+  width: 150px;
+  transition: width 0.2s ease;
+  flex-shrink: 1;
 }
 
-#search-box:focus-within {
-  width: 280px;
-  box-shadow: var(--shadow-lg), 0 0 0 3px var(--accent-light);
-}
+#search-box:focus-within { width: 210px; }
 
 #search-icon {
-  width: 15px;
-  height: 15px;
+  width: 14px;
+  height: 14px;
   flex-shrink: 0;
   color: var(--text-muted);
 }
@@ -292,18 +278,18 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); color: va
   min-width: 0;
 }
 
-#search-input::placeholder { color: #d1d5db; }
+#search-input::placeholder { color: #888; }
 
 #search-spinner {
-  width: 15px;
-  height: 15px;
+  width: 14px;
+  height: 14px;
   flex-shrink: 0;
   color: var(--accent);
 }
 
 #search-spinner svg {
-  width: 15px;
-  height: 15px;
+  width: 14px;
+  height: 14px;
   animation: spin 0.75s linear infinite;
 }
 
@@ -647,8 +633,8 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); color: va
 /* ─── Leaflet overrides ────────────────────────────────── */
 .leaflet-draw-toolbar { display: none !important; }
 
-/* ─── Responsive — mobile (≤ 640px) ───────────────────── */
-@media (max-width: 640px) {
+/* ─── Responsive — mobile (≤ 940px) ───────────────────── */
+@media (max-width: 940px) {
   :root { --toolbar-h: 62px; }
 
   /* ── Bottom tab bar ── */
@@ -669,10 +655,11 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); color: va
     overflow: visible;
   }
 
-  /* Each group fills proportional space so all 7 buttons end up equal width */
+  /* Each group fills proportional space so all 8 items end up equal width */
   #toolbar .tool-group:nth-child(1) { flex: 4; justify-content: stretch; }
   #toolbar .tool-group:nth-child(3) { flex: 2; justify-content: stretch; }
-  #toolbar .tool-group:nth-child(5) { flex: 1; justify-content: stretch; }
+  #toolbar .tool-group:nth-child(7) { flex: 1; justify-content: stretch; }
+  /* #search-box flex is set in its own mobile block below */
 
   .tool-divider { display: none; }
 
@@ -705,15 +692,58 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); color: va
     min-width: 160px;
   }
 
-  /* Search box: top-left, no toolbar there anymore */
+  /* Search: icon-only tab by default; floats above bar when expanded */
   #search-box {
-    top: 1rem;
-    left: 1rem;
-    right: auto;
-    width: 200px;
-    transform: none;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 8px 4px 6px;
+    gap: 3px;
+    width: auto;
+    overflow: hidden;
+    cursor: pointer;
   }
-  #search-box:focus-within { width: 260px; }
+
+  #search-box::after {
+    content: 'Search';
+    font-size: 10px;
+    color: var(--text-muted);
+    font-family: var(--font);
+    font-weight: 500;
+  }
+
+  /* Hide the text input until expanded */
+  #search-input { display: none; }
+  #search-spinner { display: none; }
+
+  /* Expanded state: float above the tab bar */
+  #search-box.expanded {
+    position: fixed;
+    bottom: calc(var(--toolbar-h) + 0.5rem);
+    left: 1rem;
+    right: 1rem;
+    flex-direction: row;
+    padding: 7px 12px;
+    gap: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    box-shadow: var(--shadow-lg);
+    width: auto;
+    overflow: visible;
+    cursor: auto;
+  }
+
+  #search-box.expanded::after { display: none; }
+
+  #search-box.expanded #search-input {
+    display: block;
+    flex: 1;
+    min-width: 0;
+  }
+
+  #search-box.expanded #search-spinner { display: flex; }
 
   /* Annotation panel: sits above the tab bar */
   #panel {
