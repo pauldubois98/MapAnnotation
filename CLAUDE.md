@@ -6,7 +6,10 @@ The interface should be pure and modern.
 I want to use pure JS/HTML/CSS.
 Plan before coding, ask if anything is unclear or if you see multiple implementation paths.
 
-Add a readme (including instructions to run locally)
+Add a readme (including instructions to run locally).
 
 I want the user to be able to type the name of a city, and the tool will automatically zoom on that city.
 
+I want the user to have the option to show plan view, or satellite (with or without roads, etc).
+Give as many options as possible.
+Plan before coding, ask if anython is unclear.

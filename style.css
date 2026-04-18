@@ -100,6 +100,103 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); color: va
   color: #fff;
 }
 
+/* ─── Layer picker ────────────────────────────────────── */
+#layer-picker {
+  position: fixed;
+  bottom: calc(var(--toolbar-h) + 1.75rem);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+
+  width: 392px;
+  background: var(--surface);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+
+  animation: picker-in 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes picker-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+#layer-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+#layer-picker-header span {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+#layer-picker-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+#layer-picker-close:hover { background: #f3f4f6; }
+#layer-picker-close svg { width: 14px; height: 14px; }
+
+#layer-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 12px 14px 14px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.layer-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.layer-card:hover { background: var(--accent-light); }
+
+.layer-card img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 5px;
+  border: 2.5px solid transparent;
+  display: block;
+}
+.layer-card.active img { border-color: var(--accent); }
+
+.layer-card span {
+  font-size: 11px;
+  font-weight: 500;
+  text-align: center;
+  color: var(--text-muted);
+  line-height: 1.2;
+}
+.layer-card.active span { color: var(--accent); font-weight: 700; }
+
 /* ─── City search ─────────────────────────────────────── */
 #search-box {
   position: fixed;

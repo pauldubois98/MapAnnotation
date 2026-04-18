@@ -1,17 +1,124 @@
 'use strict';
 
+// ─── Basemap catalogue ─────────────────────────────────────────────────────
+// Thumbnail tile: zoom=5, x=16, y=11 (Western Europe — shows land + water contrast)
+const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services';
+const ESRI_ATTR = '© Esri & contributors';
+
+const BASEMAPS = [
+  {
+    id: 'osm', name: 'Standard',
+    layers: [{ url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+               opts: { subdomains: 'abc', maxZoom: 19,
+                       attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' } }],
+    thumb: 'https://tile.openstreetmap.org/5/16/11.png',
+  },
+  {
+    id: 'carto-light', name: 'Light',
+    layers: [{ url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+               opts: { subdomains: 'abcd', maxZoom: 20, attribution: '© <a href="https://carto.com/">CartoDB</a>' } }],
+    thumb: 'https://a.basemaps.cartocdn.com/light_all/5/16/11.png',
+  },
+  {
+    id: 'carto-dark', name: 'Dark',
+    layers: [{ url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+               opts: { subdomains: 'abcd', maxZoom: 20, attribution: '© <a href="https://carto.com/">CartoDB</a>' } }],
+    thumb: 'https://a.basemaps.cartocdn.com/dark_all/5/16/11.png',
+  },
+  {
+    id: 'esri-sat', name: 'Satellite',
+    layers: [{ url: `${ESRI}/World_Imagery/MapServer/tile/{z}/{y}/{x}`,
+               opts: { maxZoom: 19, attribution: ESRI_ATTR } }],
+    thumb: `${ESRI}/World_Imagery/MapServer/tile/5/11/16`,
+  },
+  {
+    id: 'esri-sat-roads', name: 'Sat + Roads',
+    layers: [
+      { url: `${ESRI}/World_Imagery/MapServer/tile/{z}/{y}/{x}`,
+        opts: { maxZoom: 19, attribution: ESRI_ATTR } },
+      { url: `${ESRI}/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}`,
+        opts: { maxZoom: 19, attribution: ESRI_ATTR, opacity: 0.85 } },
+    ],
+    thumb: `${ESRI}/World_Imagery/MapServer/tile/5/11/16`,
+  },
+  {
+    id: 'esri-street', name: 'Streets',
+    layers: [{ url: `${ESRI}/World_Street_Map/MapServer/tile/{z}/{y}/{x}`,
+               opts: { maxZoom: 19, attribution: ESRI_ATTR } }],
+    thumb: `${ESRI}/World_Street_Map/MapServer/tile/5/11/16`,
+  },
+  {
+    id: 'esri-topo', name: 'Topographic',
+    layers: [{ url: `${ESRI}/World_Topo_Map/MapServer/tile/{z}/{y}/{x}`,
+               opts: { maxZoom: 19, attribution: ESRI_ATTR } }],
+    thumb: `${ESRI}/World_Topo_Map/MapServer/tile/5/11/16`,
+  },
+  {
+    id: 'esri-natgeo', name: 'Nat. Geo.',
+    layers: [{ url: `${ESRI}/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}`,
+               opts: { maxZoom: 16, attribution: ESRI_ATTR } }],
+    thumb: `${ESRI}/NatGeo_World_Map/MapServer/tile/5/11/16`,
+  },
+  {
+    id: 'esri-relief', name: 'Shaded Relief',
+    layers: [{ url: `${ESRI}/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}`,
+               opts: { maxZoom: 13, attribution: ESRI_ATTR } }],
+    thumb: `${ESRI}/World_Shaded_Relief/MapServer/tile/5/11/16`,
+  },
+  {
+    id: 'esri-gray', name: 'Gray',
+    layers: [{ url: `${ESRI}/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}`,
+               opts: { maxZoom: 16, attribution: ESRI_ATTR } }],
+    thumb: `${ESRI}/Canvas/World_Light_Gray_Base/MapServer/tile/5/11/16`,
+  },
+  {
+    id: 'carto-voyager', name: 'Voyager',
+    layers: [{ url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+               opts: { subdomains: 'abcd', maxZoom: 20, attribution: '© <a href="https://carto.com/">CartoDB</a>' } }],
+    thumb: 'https://a.basemaps.cartocdn.com/rastertiles/voyager/5/16/11.png',
+  },
+  {
+    id: 'otm', name: 'Outdoor',
+    layers: [{ url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+               opts: { subdomains: 'abc', maxZoom: 17,
+                       attribution: '© <a href="https://opentopomap.org">OpenTopoMap</a>' } }],
+    thumb: 'https://a.tile.opentopomap.org/5/16/11.png',
+  },
+  {
+    id: 'osm-hot', name: 'Humanitarian',
+    layers: [{ url: 'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+               opts: { subdomains: 'abc', maxZoom: 19,
+                       attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, Tiles by <a href="https://hot.openstreetmap.org">HOT</a>' } }],
+    thumb: 'https://a.tile.openstreetmap.fr/hot/5/16/11.png',
+  },
+];
+
 // ─── Map init ──────────────────────────────────────────────────────────────
 const map = L.map('map', { zoomControl: true }).setView([20, 0], 2);
 
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 19,
-  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-}).addTo(map);
+// Active basemap state
+let activeBasemapId = 'esri-sat';
+let activeTileLayers = [];
+
+function setBasemap(id) {
+  const bm = BASEMAPS.find(b => b.id === id);
+  if (!bm) return;
+  activeTileLayers.forEach(l => map.removeLayer(l));
+  activeTileLayers = bm.layers.map(({ url, opts }) => L.tileLayer(url, opts).addTo(map));
+  layerGroup.bringToFront();
+  activeBasemapId = id;
+  document.querySelectorAll('.layer-card').forEach(el =>
+    el.classList.toggle('active', el.dataset.id === id)
+  );
+}
 
 // ─── Store & layer index ───────────────────────────────────────────────────
 const store = { type: 'FeatureCollection', features: [] };
 const layerGroup = L.featureGroup().addTo(map);
 const layerIndex = new Map(); // id → Leaflet layer
+
+// Load default basemap (after layerGroup exists so bringToFront works)
+setBasemap('esri-sat');
 
 // ─── Style constants ───────────────────────────────────────────────────────
 const STYLES = {
@@ -42,7 +149,10 @@ const btnExport   = document.getElementById('btn-export');
 const fileInput   = document.getElementById('file-input');
 const searchInput   = document.getElementById('search-input');
 const searchSpinner = document.getElementById('search-spinner');
-const toastCont   = document.getElementById('toast-container');
+const toastCont     = document.getElementById('toast-container');
+const btnLayers     = document.getElementById('btn-layers');
+const layerPicker   = document.getElementById('layer-picker');
+const layerGrid     = document.getElementById('layer-grid');
 
 // Editing state
 let editingId = null;  // id of feature currently in panel, or null for new
@@ -388,6 +498,40 @@ btnExport.addEventListener('click', () => {
   URL.revokeObjectURL(url);
 
   toast(`Exported ${store.features.length} annotation${store.features.length !== 1 ? 's' : ''}`);
+});
+
+// ─── Layer picker ─────────────────────────────────────────────────────────
+(function buildLayerPicker() {
+  BASEMAPS.forEach((bm) => {
+    const card = document.createElement('div');
+    card.className = 'layer-card' + (bm.id === activeBasemapId ? ' active' : '');
+    card.dataset.id = bm.id;
+    card.innerHTML = `
+      <img src="${bm.thumb}" alt="${bm.name}" loading="lazy" />
+      <span>${bm.name}</span>`;
+    card.addEventListener('click', () => {
+      setBasemap(bm.id);
+      closePicker();
+      toast(bm.name);
+    });
+    layerGrid.appendChild(card);
+  });
+})();
+
+function closePicker() { layerPicker.hidden = true; }
+
+btnLayers.addEventListener('click', (e) => {
+  e.stopPropagation();
+  layerPicker.hidden = !layerPicker.hidden;
+});
+
+document.getElementById('layer-picker-close').addEventListener('click', closePicker);
+
+// Close picker on outside click
+document.addEventListener('click', (e) => {
+  if (!layerPicker.hidden && !layerPicker.contains(e.target) && e.target !== btnLayers) {
+    closePicker();
+  }
 });
 
 // ─── City search (Nominatim) ───────────────────────────────────────────────

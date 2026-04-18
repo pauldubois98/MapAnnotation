@@ -64,6 +64,32 @@
         <span>Export</span>
       </button>
     </div>
+
+    <div class="tool-divider"></div>
+
+    <div class="tool-group">
+      <button id="btn-layers" class="tool-btn" title="Change basemap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+          <polyline points="2 17 12 22 22 17"/>
+          <polyline points="2 12 12 17 22 12"/>
+        </svg>
+        <span>Layers</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Layer picker -->
+  <div id="layer-picker" hidden>
+    <div id="layer-picker-header">
+      <span>Basemap</span>
+      <button id="layer-picker-close" title="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div id="layer-grid"></div>
   </div>
 
   <!-- City search -->
