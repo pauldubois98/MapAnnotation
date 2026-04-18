@@ -22,3 +22,5 @@ Fix these warnings I get in the console:
 The user should be able to pick the color associated with each marker.
 Default to red.
 Also allow circular region selection.
+
+Allow the user to copy/paste the geojson (as well as file download/upload).

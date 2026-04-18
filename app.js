@@ -156,9 +156,11 @@ const btnCircle   = document.getElementById('btn-circle');
 const inputColor  = document.getElementById('input-color');
 const colorSwatch = document.getElementById('color-swatch');
 const colorHex    = document.getElementById('color-hex');
-const btnImport   = document.getElementById('btn-import');
-const btnExport   = document.getElementById('btn-export');
-const fileInput   = document.getElementById('file-input');
+const btnImport        = document.getElementById('btn-import');
+const btnExport        = document.getElementById('btn-export');
+const importDropdown   = document.getElementById('import-dropdown');
+const exportDropdown   = document.getElementById('export-dropdown');
+const fileInput        = document.getElementById('file-input');
 const searchInput   = document.getElementById('search-input');
 const searchSpinner = document.getElementById('search-spinner');
 const toastCont     = document.getElementById('toast-container');
@@ -440,8 +442,47 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
+// ─── Shared: load GeoJSON features into the map ────────────────────────────
+function loadGeoJSON(geojson) {
+  if (geojson.type !== 'FeatureCollection' || !Array.isArray(geojson.features)) {
+    return null; // invalid
+  }
+  let count = 0;
+  geojson.features.forEach((feature) => {
+    if (!feature.properties) feature.properties = {};
+    if (!feature.properties.id) feature.properties.id = crypto.randomUUID();
+    if (!feature.properties.annotationType) {
+      const gmap = { Point: 'point', LineString: 'path', Polygon: 'region' };
+      feature.properties.annotationType = gmap[feature.geometry?.type] ?? 'point';
+    }
+    if (layerIndex.has(feature.properties.id)) return;
+    store.features.push(feature);
+    renderFeature(feature);
+    count++;
+  });
+  if (count > 0 && layerGroup.getLayers().length > 0) {
+    try { map.fitBounds(layerGroup.getBounds().pad(0.2)); } catch {}
+  }
+  return count;
+}
+
+// ─── Dropdown toggle helpers ───────────────────────────────────────────────
+const allDropdowns = [importDropdown, exportDropdown];
+
+function toggleDropdown(dd, anchorBtn, e) {
+  e.stopPropagation();
+  const isOpen = !dd.hidden;
+  allDropdowns.forEach(d => { d.hidden = true; });
+  if (!isOpen) dd.hidden = false;
+}
+
+document.addEventListener('click', () => allDropdowns.forEach(d => { d.hidden = true; }));
+
 // ─── Import ────────────────────────────────────────────────────────────────
-btnImport.addEventListener('click', () => {
+btnImport.addEventListener('click', (e) => toggleDropdown(importDropdown, btnImport, e));
+
+document.getElementById('import-file').addEventListener('click', () => {
+  importDropdown.hidden = true;
   fileInput.value = '';
   fileInput.click();
 });
@@ -449,70 +490,92 @@ btnImport.addEventListener('click', () => {
 fileInput.addEventListener('change', () => {
   const file = fileInput.files[0];
   if (!file) return;
-
   const reader = new FileReader();
   reader.onload = (ev) => {
     let geojson;
-    try {
-      geojson = JSON.parse(ev.target.result);
-    } catch {
-      toast('Invalid JSON file');
-      return;
-    }
-
-    if (geojson.type !== 'FeatureCollection' || !Array.isArray(geojson.features)) {
-      toast('File must be a GeoJSON FeatureCollection');
-      return;
-    }
-
-    let count = 0;
-    geojson.features.forEach((feature) => {
-      // Ensure the feature has required properties
-      if (!feature.properties) feature.properties = {};
-      if (!feature.properties.id) feature.properties.id = crypto.randomUUID();
-
-      // Infer annotationType from geometry if missing
-      if (!feature.properties.annotationType) {
-        const gmap = { Point: 'point', LineString: 'path', Polygon: 'region' };
-        feature.properties.annotationType = gmap[feature.geometry?.type] ?? 'point';
-      }
-
-      // Skip duplicates
-      if (layerIndex.has(feature.properties.id)) return;
-
-      store.features.push(feature);
-      renderFeature(feature);
-      count++;
-    });
-
-    // Fit map to annotations if any were loaded
-    if (count > 0 && layerGroup.getLayers().length > 0) {
-      try { map.fitBounds(layerGroup.getBounds().pad(0.2)); } catch {}
-    }
-
+    try { geojson = JSON.parse(ev.target.result); }
+    catch { toast('Invalid JSON file'); return; }
+    const count = loadGeoJSON(geojson);
+    if (count === null) { toast('File must be a GeoJSON FeatureCollection'); return; }
     toast(`Imported ${count} annotation${count !== 1 ? 's' : ''}`);
   };
-
   reader.readAsText(file);
 });
 
-// ─── Export ────────────────────────────────────────────────────────────────
-btnExport.addEventListener('click', () => {
-  if (store.features.length === 0) {
-    toast('No annotations to export');
-    return;
-  }
+document.getElementById('import-clipboard').addEventListener('click', () => {
+  importDropdown.hidden = true;
+  openPasteModal();
+});
 
+// ─── Export ────────────────────────────────────────────────────────────────
+btnExport.addEventListener('click', (e) => toggleDropdown(exportDropdown, btnExport, e));
+
+document.getElementById('export-file').addEventListener('click', () => {
+  exportDropdown.hidden = true;
+  if (store.features.length === 0) { toast('No annotations to export'); return; }
   const json = JSON.stringify(store, null, 2);
   const blob = new Blob([json], { type: 'application/geo+json' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
-  a.href     = url;
+  a.href = url;
   a.download = `annotations-${new Date().toISOString().slice(0, 10)}.geojson`;
   a.click();
   URL.revokeObjectURL(url);
-
   toast(`Exported ${store.features.length} annotation${store.features.length !== 1 ? 's' : ''}`);
+});
+
+document.getElementById('export-clipboard').addEventListener('click', async () => {
+  exportDropdown.hidden = true;
+  if (store.features.length === 0) { toast('No annotations to copy'); return; }
+  try {
+    await navigator.clipboard.writeText(JSON.stringify(store, null, 2));
+    toast(`Copied ${store.features.length} annotation${store.features.length !== 1 ? 's' : ''} to clipboard`);
+  } catch {
+    toast('Clipboard access denied');
+  }
+});
+
+// ─── Paste modal (opened via Import → From clipboard) ─────────────────────
+const pasteModal = document.getElementById('paste-modal');
+const pasteInput = document.getElementById('paste-input');
+const pasteHint  = document.getElementById('paste-hint');
+
+function openPasteModal() {
+  pasteInput.value = '';
+  pasteHint.textContent = 'Paste or type GeoJSON, then click Load.';
+  pasteHint.style.color = '';
+  pasteModal.hidden = false;
+  navigator.clipboard.readText().then(text => {
+    if (text.trim().startsWith('{') || text.trim().startsWith('[')) pasteInput.value = text;
+  }).catch(() => {});
+  setTimeout(() => pasteInput.focus(), 50);
+}
+
+function closePasteModal() { pasteModal.hidden = true; }
+
+document.getElementById('paste-dialog-close').addEventListener('click', closePasteModal);
+document.getElementById('paste-cancel').addEventListener('click', closePasteModal);
+pasteModal.addEventListener('click', (e) => { if (e.target === pasteModal) closePasteModal(); });
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !pasteModal.hidden) closePasteModal();
+});
+
+document.getElementById('paste-load').addEventListener('click', () => {
+  let geojson;
+  try { geojson = JSON.parse(pasteInput.value.trim()); }
+  catch {
+    pasteHint.textContent = 'Invalid JSON — check your input and try again.';
+    pasteHint.style.color = 'var(--danger)';
+    return;
+  }
+  const count = loadGeoJSON(geojson);
+  if (count === null) {
+    pasteHint.textContent = 'Must be a GeoJSON FeatureCollection.';
+    pasteHint.style.color = 'var(--danger)';
+    return;
+  }
+  closePasteModal();
+  toast(`Loaded ${count} annotation${count !== 1 ? 's' : ''}`);
 });
 
 // ─── Color picker live preview ─────────────────────────────────────────────
