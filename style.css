@@ -201,7 +201,7 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); color: va
 #search-box {
   position: fixed;
   top: 1rem;
-  right: 1rem;
+  left: 5rem;
   z-index: 1000;
 
   display: flex;
