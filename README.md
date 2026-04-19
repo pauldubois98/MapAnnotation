@@ -1,5 +1,7 @@
 # Map Annotation
 
+Tool link: https://pauldubois98.github.io/MapAnnotation/
+
 A lightweight, browser-only tool to annotate any location on an interactive map. Draw points, paths, and regions, attach names and descriptions, then share your work as a standard GeoJSON file.
 
 No build step. No dependencies to install. Open one HTML file and go.
